@@ -1,0 +1,14 @@
+{
+  "version": "2.0",
+  "app_name": "news-notifier",
+  "stages": {
+    "dev": {
+      "autogen_policy": false,
+      "iam_policy_file": "policy.json",
+      "environment_variables": {
+        "DYNAMODB_TABLE": "your-dynamodb-arn",
+        "SNS_TOPIC_ARN": "your-sns-arn"
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+chalice
+Beautifulsoup4
+requests
+boto3
+botocore
