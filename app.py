@@ -13,9 +13,10 @@ def scrape_natalie(data: dict):
     """ナタリーからニュースリンクを収集する"""
     site_name = "ナタリー"
     data[site_name] = {}
-    url = 'https://natalie.mu/'
+    url = 'https://natalie.mu/news/'
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
+    soup = soup.find('div', class_='NA_section')
     news_cards = soup.find_all('div', class_='NA_card')
     for card in news_cards:
         title = card.find('p', class_='NA_card_title').get_text()
@@ -62,7 +63,7 @@ def save_to_dynamodb(table, news):
     current_time = int(time.time())
     one_week_later = current_time + (7 * 24 * 60 * 60)
     for site_name, articles in news.items():
-        for title, url in articles.items():
+        for url, title in articles.items():
             try:
                 table.put_item(
                     Item={
@@ -83,7 +84,7 @@ def save_to_dynamodb(table, news):
 
 # 毎日 8:30 11:30 14:30 17:30に実行
 # UTCなので、9H前で指定
-@app.schedule(Cron(minutes='30', hours='23,2,5,8', day_of_month='?', month='*', day_of_week='*', year='*'))
+@app.schedule(Cron(minutes='30', hours='23,2,5,8,11', day_of_month='?', month='*', day_of_week='*', year='*'))
 def scrape_and_notify(event):
     """メイン処理"""
     # DynamoDBクライアントの設定
@@ -109,7 +110,6 @@ def scrape_and_notify(event):
             d[url] = title
         if found:
             news_subscribe[site_name] = d
-
     if news_subscribe:
         # SNS通知のテキストを作る
         notification_message = prepare_notification(news_subscribe)
